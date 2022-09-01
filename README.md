@@ -12,3 +12,9 @@ Código de un bot de discord que nadie va a ver así que pq chucha voy a escribi
 ## Auto Roles
 
 ![img](https://cdn.discordapp.com/attachments/988332902456631359/1012833603375337603/rol.png)
+
+## Nivelación
+
+Sistema de niveles con Ranking Cards
+![img](https://cdn.discordapp.com/attachments/977947070818308181/1015000791083393074/unknown.png)
+>Yo no me he puesto ese nombre xddd
