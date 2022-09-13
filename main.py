@@ -652,6 +652,33 @@ async def on_message(message):
       await cursor.execute('UPDATE nivel SET nivel = ? WHERE usuario = ? AND guild = ?', (45, autor.id, guild.id))
       await cursor.execute('UPDATE nivel SET xp = ? WHERE usuario = ? AND guild = ?', (0, autor.id, guild.id))
       await canalxp.send(f'{autor.mention} ha llegado al nivel **45**, sigue así :D')
+    
+    elif nivel == 45 and xp >= 23000:
+      await cursor.execute('UPDATE nivel SET nivel = ? WHERE usuario = ? AND guild = ?', (46, autor.id, guild.id))
+      await cursor.execute('UPDATE nivel SET xp = ? WHERE usuario = ? AND guild = ?', (0, autor.id, guild.id))
+      await canalxp.send(f'{autor.mention} ha llegado al nivel **46**, sigue así :D')
+
+    elif nivel == 46 and xp >= 23500:
+      await cursor.execute('UPDATE nivel SET nivel = ? WHERE usuario = ? AND guild = ?', (47, autor.id, guild.id))
+      await cursor.execute('UPDATE nivel SET xp = ? WHERE usuario = ? AND guild = ?', (0, autor.id, guild.id))
+      await canalxp.send(f'{autor.mention} ha llegado al nivel **47**, sigue así :D')
+    
+    elif nivel == 47 and xp >= 24000:
+      await cursor.execute('UPDATE nivel SET nivel = ? WHERE usuario = ? AND guild = ?', (48, autor.id, guild.id))
+      await cursor.execute('UPDATE nivel SET xp = ? WHERE usuario = ? AND guild = ?', (0, autor.id, guild.id))
+      await canalxp.send(f'{autor.mention} ha llegado al nivel **48**, sigue así :D')
+
+    elif nivel == 48 and xp >= 24500:
+      await cursor.execute('UPDATE nivel SET nivel = ? WHERE usuario = ? AND guild = ?', (49, autor.id, guild.id))
+      await cursor.execute('UPDATE nivel SET xp = ? WHERE usuario = ? AND guild = ?', (0, autor.id, guild.id))
+      await canalxp.send(f'{autor.mention} ha llegado al nivel **49**, sigue así :D')
+
+    elif nivel == 49 and xp >= 25000:
+      await cursor.execute('UPDATE nivel SET nivel = ? WHERE usuario = ? AND guild = ?', (50, autor.id, guild.id))
+      await cursor.execute('UPDATE nivel SET xp = ? WHERE usuario = ? AND guild = ?', (0, autor.id, guild.id))
+      await canalxp.send(f'{autor.mention} ha llegado al nivel **50** y ahora tiene el rol <@&1014229014879162468>, sigue así :D')
+      lvl6 = nextcord.utils.get(message.author.guild.roles, id=1014229014879162468)
+      await message.author.add_roles(lvl6)
 
 
   #Hacer los cambios a la Database
@@ -693,100 +720,7 @@ async def nivel(ctx, usuario:nextcord.Member=None):
     print(nivel)
     
     #XP necesaria para cada nivel
-    if nivel == 0:
-      nextxp = 500
-    elif nivel == 1:
-      nextxp = 1000
-    elif nivel == 2:
-      nextxp = 1500
-    elif nivel == 3:
-      nextxp = 2000
-    elif nivel == 4:
-      nextxp = 2500
-    elif nivel == 5:
-      nextxp = 3000
-    elif nivel == 6:
-      nextxp = 3500
-    elif nivel == 7:
-      nextxp = 4000
-    elif nivel == 8:
-      nextxp = 4500
-    elif nivel == 9:
-      nextxp = 5000
-    elif nivel == 10:
-      nextxp = 5500
-    elif nivel == 11:
-      nextxp = 6000
-    elif nivel == 12:
-      nextxp = 6500
-    elif nivel == 13:
-      nextxp = 7000
-    elif nivel == 14:
-      nextxp = 7500
-    elif nivel == 15:
-      nextxp = 8000
-    elif nivel == 16:
-      nextxp = 8500
-    elif nivel == 17:
-      nextxp = 9000
-    elif nivel == 18:
-      nextxp = 9500
-    elif nivel == 19:
-      nextxp = 10000
-    elif nivel == 20:
-      nextxp = 10500
-    elif nivel == 21:
-      nextxp = 11000
-    elif nivel == 22:
-      nextxp = 11500
-    elif nivel == 23:
-      nextxp = 12000
-    elif nivel == 24:
-      nextxp = 12500
-    elif nivel == 25:
-      nextxp = 13000
-    elif nivel == 26:
-      nextxp = 13500
-    elif nivel == 27:
-      nextxp = 14000
-    elif nivel == 28:
-      nextxp = 14500
-    elif nivel == 29:
-      nextxp = 15000
-    elif nivel == 30:
-      nextxp = 15500
-    elif nivel == 31:
-      nextxp = 16000
-    elif nivel == 32:
-      nextxp = 16500
-    elif nivel == 33:
-      nextxp = 17000
-    elif nivel == 34:
-      nextxp = 17500
-    elif nivel == 35:
-      nextxp = 18000
-    elif nivel == 36:
-      nextxp = 18500
-    elif nivel == 37:
-      nextxp = 19000
-    elif nivel == 38:
-      nextxp = 19500
-    elif nivel == 39:
-      nextxp = 20000
-    elif nivel == 40:
-      nextxp = 20500
-    elif nivel == 41:
-      nextxp = 21000
-    elif nivel == 42:
-      nextxp = 21500
-    elif nivel == 43:
-      nextxp = 22000
-    elif nivel == 44:
-      nextxp = 22500
-    elif nivel == 45:
-      nextxp = 23000
-    elif nivel == 46:
-      nextxp = 23500
+    nextxp = nivel * 500
     
 
     #Hacer la imagen del comando de rango
@@ -802,8 +736,8 @@ async def nivel(ctx, usuario:nextcord.Member=None):
     fondo.text((487, 114), usuario.display_name, font=poppins, color='#ffffff')
     fondo.text((1480, 440), f'Nivel {nivel}', font=spoppins, color='#ffffff', align='right')
     fondo.text((487, 340), f'{xp} / {nextxp}xp', font=spoppins, color='#ffffff')
-    fondo.rectangle((487, 239), width=905, height=87, color='#ffffff', radius=30)
-    fondo.bar((487, 239), max_width=905, height=87, percentage=((xp / nextxp) * 100), color='#dc4c56', radius=30) 
+    fondo.rectangle((487, 239), width=905, height=87, color='#ffffff', radius=60)
+    fondo.bar((487, 239), max_width=905, height=87, percentage=((xp / nextxp) * 100), color='#dc4c56', radius=60) 
 
 
 
