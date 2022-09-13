@@ -16,5 +16,5 @@ Código de un bot de discord que nadie va a ver así que pq chucha voy a escribi
 ## Nivelación
 
 Sistema de niveles con Ranking Cards
-![img](https://cdn.discordapp.com/attachments/977947070818308181/1015000791083393074/unknown.png)
+![img](https://media.discordapp.net/attachments/1012209925407121439/1018810891971612763/nivelacion.png?width=857&height=286)
 >Yo no me he puesto ese nombre xddd
