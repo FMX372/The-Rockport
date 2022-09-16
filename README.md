@@ -3,7 +3,7 @@ Código de un bot de discord que nadie va a ver así que pq chucha voy a escribi
 
 ## Bienvenidas GIF Custom
 
-![img](https://cdn.discordapp.com/attachments/1012180882217508924/1012767984328118414/out.gif)
+![img](https://cdn.discordapp.com/attachments/1012180882217508924/1019597789929418853/out.gif)
 
 ## Moderación
 
@@ -16,5 +16,9 @@ Código de un bot de discord que nadie va a ver así que pq chucha voy a escribi
 ## Nivelación
 
 Sistema de niveles con Ranking Cards
-![img](https://media.discordapp.net/attachments/1012209925407121439/1018810891971612763/nivelacion.png?width=857&height=286)
+![img](https://cdn.discordapp.com/attachments/1012209925407121439/1020279136033456128/nivelacion.png)
 >Yo no me he puesto ese nombre xddd
+
+## Economía
+
+![img](https://cdn.discordapp.com/attachments/988332902456631359/1020300159290200074/eco.png)
