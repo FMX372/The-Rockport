@@ -12,6 +12,7 @@ import asyncio
 import datetime
 import humanfriendly
 import aiosqlite
+import aiohttp
 import requests
 from io import BytesIO
 from easy_pil import *
@@ -31,14 +32,17 @@ TOKEN = 'TOKEN'
 @client.event
 async def on_ready():
   #Actividad custom (pijadas)
- await client.change_presence(status=nextcord.Status.online, activity=nextcord.Activity(type=nextcord.ActivityType.watching, name="PornHub"))
+  await client.change_presence(status=nextcord.Status.online, activity=nextcord.Activity(type=nextcord.ActivityType.watching, name="PornHub"))
    #Conectar a la base de datos
- setattr(client, 'db', await aiosqlite.connect('niveles.db'))
- await asyncio.sleep(3)
- async with client.db.cursor() as cursor:
-  await cursor.execute('CREATE TABLE IF NOT EXISTS nivel (nivel INTEGER, xp INTEGER, usuario INTEGER, guild INTEGER)')
+  setattr(client, 'db', await aiosqlite.connect('niveles.db'))
+  await asyncio.sleep(1)
+  async with client.db.cursor() as cursor:
+    await cursor.execute('CREATE TABLE IF NOT EXISTS nivel (nivel INTEGER, xp INTEGER, usuario INTEGER, guild INTEGER)')
+  print('Conexión con la base de datos')
+  await asyncio.sleep(1)
+
    #Que se muestra en la consola al iniciar el bot
- print("THE ROCKPORT está en línea")
+  print("THE ROCKPORT está en línea")
 
 
 
@@ -59,8 +63,11 @@ async def on_ready():
 async def on_member_join(usuario):
 
 #Autorol
- rol = nextcord.utils.get(usuario.guild.roles, id=1012189850167943209)
- await usuario.add_roles(rol)
+ rolMiembros = nextcord.utils.get(usuario.guild.roles, id=1012189850167943209)
+ rolNiveles = nextcord.utils.get(usuario.guild.roles, id=1017258189739270224)
+ rolEco = nextcord.utils.get(usuario.guild.roles, id=1017258625468743701)
+ rolAuto = nextcord.utils.get(usuario.guild.roles, id=1017258787192717392)
+ await usuario.add_roles(rolMiembros, rolNiveles, rolEco, rolAuto)
 
 #Mandar el mensaje en el canal del sistema
  canal = usuario.guild.system_channel
@@ -393,6 +400,10 @@ async def on_message(message):
   if message.author.bot:
     return
 
+  if message.content.startswith('>'):
+    await client.process_commands(message)
+    return
+
   autor = message.author
   guild = message.guild
 
@@ -693,9 +704,10 @@ async def on_message(message):
 #Ver el nivel
 @client.command(name='nivel')
 async def nivel(ctx, usuario:nextcord.Member=None):
+
   if usuario == None:
     usuario = ctx.author
-  print(usuario)
+
   async with client.db.cursor() as cursor:
     await cursor.execute('SELECT xp FROM nivel WHERE usuario = ? AND guild = ?', (usuario.id, ctx.guild.id))
     xp = await cursor.fetchone()
@@ -720,29 +732,215 @@ async def nivel(ctx, usuario:nextcord.Member=None):
     print(nivel)
     
     #XP necesaria para cada nivel
-    nextxp = nivel * 500
+    nextxp = (nivel * 500) + 500
     
 
     #Hacer la imagen del comando de rango
+    canvas = Canvas((1500, 500), color = 'black')
     fondo = Editor('NIVEL.png')
-    pfp = await load_image_async(str(usuario.avatar.url))
+
+    try:
+      pfp = await load_image_async(str(usuario.avatar.url))
+    except:
+      pfp = await load_image_async('https://external-preview.redd.it/4PE-nlL_PdMD5PrFNLnjurHQ1QKPnCvg368LTDnfM-M.png?auto=webp&s=ff4c3fbc1cce1a1856cff36b5d2a40a6d02cc1c3')
     cargarpfp = Editor(pfp).resize((380, 380)).circle_image()
 
-    poppins = ImageFont.truetype("Uni_Sans_Heavy.otf", 100, encoding="unic")
-    spoppins = ImageFont.truetype("Uni_Sans_Heavy.otf", 60, encoding="unic")
+    poppins = ImageFont.truetype("Uni_Sans_Heavy.otf", 90)
+    spoppins = ImageFont.truetype("Uni_Sans_Heavy.otf", 60)
 
+    #Añadir foto si hay
+    rankPathimg = os.path.join(os.getcwd(), "rankCards", str(usuario.id) + ".png")
+
+    if (os.path.exists(rankPathimg)):
+      fondoCustom = Image.open(rankPathimg)
+      fondoCustomEditor = Editor(fondoCustom).resize((1500, 500))
+      fondo.paste(fondoCustomEditor, (0, 0))
+    else:
+      fondoCustom = Image.open('NIVEL.png')
+      fondo.paste(fondoCustom, (0, 0))
 
     fondo.paste(cargarpfp, (65, 60))
     fondo.text((487, 114), usuario.display_name, font=poppins, color='#ffffff')
     fondo.text((1480, 440), f'Nivel {nivel}', font=spoppins, color='#ffffff', align='right')
     fondo.text((487, 340), f'{xp} / {nextxp}xp', font=spoppins, color='#ffffff')
-    fondo.rectangle((487, 239), width=905, height=87, color='#ffffff', radius=60)
-    fondo.bar((487, 239), max_width=905, height=87, percentage=((xp / nextxp) * 100), color='#dc4c56', radius=60) 
+    fondo.rectangle((487, 230), width=905, height=87, color='#ffffff', radius=60)
+    fondo.bar((487, 230), max_width=905, height=87, percentage=((xp / nextxp) * 100), color=f'{usuario.color}', radius=60)
 
 
 
     fotorango = nextcord.File(fp=fondo.image_bytes, filename='nivelación.png')
     await ctx.send(file=fotorango)
+
+
+#Foto custom de nivel
+@client.command(name='nivel-img')
+async def nivelimg(ctx, quitar=''):
+
+  #Si no tiene el nivel 30, no deja usarlo
+  lvl30 = nextcord.utils.get(ctx.guild.roles, id=1014229437304287253)
+  if not lvl30 in ctx.author.roles:
+    await ctx.reply('Necesitas tener el rol <@&1014229437304287253> para usar esta función <:niggawhaat:1015035386319343616>')
+    return
+
+  if quitar == "quitar":
+    if (os.path.exists(os.path.join(os.getcwd(), "rankCards", f'{ctx.author.id}.png'))):
+
+      os.remove(os.path.join(os.getcwd(), "rankCards", f'{ctx.author.id}.png'))
+      await ctx.send(f"Se ha quitado el fondo de tu carta de nivel")
+    #Si no tiene una    
+    else:
+      await ctx.send(f"No puedo quitar la imagen, no hay")
+
+
+
+  if valid_image_url(ctx.message.attachments[0].url):
+    await download_image(ctx.message.attachments[0].url, "rankCards", f'{ctx.author.id}.png')
+
+    await ctx.send('¡He actualizado tu fondo de la carta de nivel! <:Niceguy:1015068562072817734>')
+
+
+def valid_image_url(url: str):
+    image_extensions = ['png', 'jpg', 'jpeg']
+    for image_extension in image_extensions:
+        if url.endswith('.' + image_extension):
+            return True
+    return False
+
+
+async def download_image(url: str, images_path: str, image_name: str):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                with open(os.path.join(images_path, image_name), "wb") as f:
+                    f.write(await resp.read())
+
+
+
+
+
+#Cuando alguien se va, resetear los niveles.
+@client.event
+async def on_member_remove(member):
+
+  guildid = 1012177305449271386
+  async with client.db.cursor() as cursor:
+    await cursor.execute('UPDATE nivel SET nivel = ? WHERE usuario = ? AND guild = ?', (0, member.id, guildid))
+    await cursor.execute('UPDATE nivel SET xp = ? WHERE usuario = ? AND guild = ?', (0, member.id, guildid))
+
+  await client.db.commit()
+
+
+
+
+
+
+
+
+
+
+
+
+#Economía------------------------------------------------------------------------------------------------
+
+#BALANCE
+@client.command(name='balance')
+async def balance(ctx, usuario:nextcord.Member=None):
+
+  if usuario == None:
+    usuario = ctx.author
+
+  dineroPathEco = os.path.join(os.getcwd(), "eco", str(usuario.id) + ".eco.txt")
+
+  if (os.path.exists(dineroPathEco)):
+    with open(dineroPathEco) as ecoFile:
+      balance = ecoFile.read()
+  else:
+    await ctx.reply('Parece que este usuario no tiene nada en el banco <a:emoji_51:1015420747688198236>')
+    return
+  
+  embed = nextcord.Embed(title=f'Cuenta de {usuario.display_name}', color=usuario.color)
+  embed.add_field(name='Balance:', value=f'> {balance} <a:MonedaOro:1020266130658566175>')
+  await ctx.send(embed=embed)
+
+
+
+
+
+#INGRESAR
+@client.command(name='ingresar')
+@commands.has_permissions(manage_roles=True)
+async def ingresar(ctx, usuario:nextcord.Member=None, cantidad = '0'):
+
+  if usuario == None:
+    await ctx.reply('No has indicado a ningún usuario para la operación <:Nimodo:1015068273123012678>')
+    return
+
+  if cantidad == '0':
+    await ctx.reply('No has dado una cifra que ingresar <:emoji_39:1015420289460490300>')
+    return
+
+  try:
+    int(cantidad)
+  except:
+    await ctx.reply(f'¿Es {cantidad} un número? <a:emoji_52:1015420784681963652>')
+    return
+
+  dineroPathEco = os.path.join(os.getcwd(), "eco", str(usuario.id) + ".eco.txt")
+
+  if (os.path.exists(dineroPathEco)):
+    with open(dineroPathEco) as ecoFile:
+      balance = ecoFile.read()
+      dineroFinalInt = int(balance) + int(cantidad)
+      dineroFinal = str(dineroFinalInt)
+    with open(os.path.join(os.getcwd(), "eco", str(usuario.id) + ".eco.txt"), "w") as ecoFile:
+      ecoFile.write(dineroFinal)
+  else:
+    with open(os.path.join(os.getcwd(), "eco", str(usuario.id) + ".eco.txt"), "w") as ecoFile:
+      dineroFinal = str(cantidad)
+      ecoFile.write(dineroFinal)
+
+  embed = nextcord.Embed(title='¡Ingreso realizado con éxito!', description=f'Se han ingresado **{str(cantidad)}** <a:MonedaOro:1020266130658566175> a **{usuario.display_name}**', color=0xffd20a)
+  await ctx.send(embed=embed)
+
+
+
+#RETIRAR
+@client.command(name='retirar')
+@commands.has_permissions(manage_roles=True)
+async def retirar(ctx, usuario:nextcord.Member=None, cantidad = '0'):
+
+  if usuario == None:
+    await ctx.reply('No has indicado a ningún usuario para la operación <:Nimodo:1015068273123012678>')
+    return
+
+  if cantidad == '0':
+    await ctx.reply('No has dado una cifra que retirar <:emoji_39:1015420289460490300>')
+    return
+
+  try:
+    int(cantidad)
+  except:
+    await ctx.reply(f'¿Es {cantidad} un número? <a:emoji_52:1015420784681963652>')
+    return
+
+  dineroPathEco = os.path.join(os.getcwd(), "eco", str(usuario.id) + ".eco.txt")
+
+  if (os.path.exists(dineroPathEco)):
+    with open(dineroPathEco) as ecoFile:
+      balance = ecoFile.read()
+      if int(cantidad) > int(balance):
+        dineroFinal = ('0')
+      else:
+        dineroFinalInt = int(balance) - int(cantidad)
+        dineroFinal = str(dineroFinalInt)
+    with open(os.path.join(os.getcwd(), "eco", str(usuario.id) + ".eco.txt"), "w") as ecoFile:
+      ecoFile.write(dineroFinal)
+
+  else:
+    await ctx.reply('Este usuario no tiene nada en el banco <:cry:1015035821742632990>')
+    return
+  embed = nextcord.Embed(title='¡Retiro realizado con éxito!', description=f'Se le han retirado **{str(cantidad)}** <a:MonedaOro:1020266130658566175> a **{usuario.display_name}**', color=0xf2163e)
+  await ctx.send(embed=embed)
 
 
 
